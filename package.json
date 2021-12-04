@@ -1,5 +1,5 @@
 {
-  "name": "cardano-wallet-playground",
+  "name": "cardano-js-boilerplate",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
