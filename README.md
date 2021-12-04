@@ -1,6 +1,10 @@
 # Cardano JS Sample
 
 This simple application shows how to use Cardano Nami Wallet JavaScript capabilities to operate in the Cardano blockchain using pure JavaScript.  
+
+For those who are familiar with React, everything is self-explanable in `App.js`.
+
+This app expects that Nami Wallet is loaded. It shows a button to connect to wallet and when the wallet is connected, shows its balance.
 ## Running
 In the project directory, you can run:
 
