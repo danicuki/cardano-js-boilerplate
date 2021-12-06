@@ -1,12 +1,20 @@
 import './App.css';
 import { useEffect, useState } from 'react';
 import cbor from 'cbor';
+import * as wasm from '@emurgo/cardano-serialization-lib-asmjs';
+
+function hexToBytes(hex) {
+  for (var bytes = [], c = 0; c < hex.length; c += 2)
+      bytes.push(parseInt(hex.substr(c, 2), 16));
+  return bytes;
+}
 
 function App() {
 
   const [wallet, setWallet] = useState(false);
   const [balance, setBalance] = useState(0);
   const [network, setNetwork] = useState(null);
+  const [address, setAddress] = useState("");
   const [cardano, setCardano] = useState(window.cardano);
 
   // hack when cardano extension take some time to load
@@ -25,6 +33,7 @@ function App() {
     const showWalletData = () => {
       cardano.getBalance().then(showBalance);
       cardano.getNetworkId().then(showNetwork);
+      cardano.getUsedAddresses().then(x => showAddress(x[0]));
     }
 
     cardano.onNetworkChange((n) => { showWalletData() });
@@ -32,6 +41,7 @@ function App() {
     showWalletData();
     
     window.cbor = cbor;
+    window.wasm = wasm;
   }, [wallet, cardano]);
 
   useEffect(() => {
@@ -51,6 +61,11 @@ function App() {
     } else {
       setBalance(decoded[0] / 1_000_000)
     }
+  }
+
+  const showAddress = (hexAddress) => {
+    const addr = wasm.Address.from_bytes(hexToBytes(hexAddress))
+    setAddress(addr.to_bech32())
   }
 
   const connectWallet = () => {
@@ -78,6 +93,7 @@ function App() {
               <div>
                 <h2>Balance: {balance}</h2>
                 <h3>Network: {network}</h3>
+                <h5>Address: {address}</h5>
               </div>
             )}
           </div>
