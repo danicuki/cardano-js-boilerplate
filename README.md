@@ -28,6 +28,5 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 PR are very welcome! 
 
  TODO:
- - Show Wallet Address
  - List Wallet NFT Assets
  - Create, Sign and Submit Transactions
