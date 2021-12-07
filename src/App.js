@@ -17,10 +17,13 @@ function App() {
   const [address, setAddress] = useState("");
   const [cardano, setCardano] = useState(window.cardano);
 
-  // hack when cardano extension take some time to load
-  setTimeout(() => {
-    setCardano(window.cardano);
-  }, 100)
+  useEffect(() => {
+    const onLoad = async () => {
+      setCardano(window.cardano);
+    };
+    window.addEventListener('load', onLoad);
+    return () => window.removeEventListener('load', onLoad);
+  }, []);
 
   useEffect(() => {
     if (!wallet) return;
@@ -37,6 +40,7 @@ function App() {
     }
 
     cardano.onNetworkChange((n) => { showWalletData() });
+    cardano.onAccountChange (() => { showWalletData() });
 
     showWalletData();
     
