@@ -27,12 +27,29 @@ function App() {
 
   useEffect(() => {
     if (!wallet) return;
+
+    const int = (value) => Number(value.to_str());
+
+    const showBalance = (string) => {
+      const value = wasm.Value.from_bytes(hexToBytes(string))
+      const locked = wasm.min_ada_required(value, wasm.BigNum.from_str('1000000'))
+  
+      const result = int(value.coin()) - int(locked);
+  
+      setBalance(result / 1_000_000);
+    }
+  
     const networks = ['testnet', 'mainnet'];
 
     const showNetwork = (network) => {
       setNetwork(networks[network]);
     }
-        
+
+    const showAddress = (hexAddress) => {
+      const addr = wasm.Address.from_bytes(hexToBytes(hexAddress))
+      setAddress(addr.to_bech32())
+    }
+  
     const showWalletData = () => {
       cardano.getBalance().then(showBalance);
       cardano.getNetworkId().then(showNetwork);
@@ -57,20 +74,6 @@ function App() {
       });
     }
   })
-
-  const showBalance = (string) => {
-    const decoded = cbor.decode(string)
-    if (typeof decoded === 'number') {
-      setBalance(decoded / 1_000_000);
-    } else {
-      setBalance(decoded[0] / 1_000_000)
-    }
-  }
-
-  const showAddress = (hexAddress) => {
-    const addr = wasm.Address.from_bytes(hexToBytes(hexAddress))
-    setAddress(addr.to_bech32())
-  }
 
   const connectWallet = () => {
     cardano.enable().then((resp) => {
