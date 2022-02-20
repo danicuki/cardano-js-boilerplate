@@ -11,7 +11,7 @@ function hexToBytes(hex) {
 
 function App() {
 
-  const [wallet, setWallet] = useState(false);
+  const [wallet, setWallet] = useState(null);
   const [balance, setBalance] = useState(0);
   const [network, setNetwork] = useState(null);
   const [address, setAddress] = useState("");
@@ -28,14 +28,18 @@ function App() {
   useEffect(() => {
     if (!wallet) return;
 
-    const int = (value) => Number(value.to_str());
+    // const int = (value) => Number(value.to_str());
 
     const showBalance = (string) => {
-      const value = wasm.Value.from_bytes(hexToBytes(string))
-      const locked = wasm.min_ada_required(value, wasm.BigNum.from_str('1000000'))
+      // const value = wasm.Value.from_bytes(hexToBytes(string))
+      // const locked = wasm.min_ada_required(value, wasm.BigNum.from_str('1000000'))
   
-      const result = int(value.coin()) - int(locked);
-  
+      // const result = int(value.coin()) - int(locked);
+      let result = cbor.decode(string);
+      if (result[0]) {
+        result = result[0];
+      }
+
       setBalance(result / 1_000_000);
     }
   
@@ -51,13 +55,13 @@ function App() {
     }
   
     const showWalletData = () => {
-      cardano.getBalance().then(showBalance);
-      cardano.getNetworkId().then(showNetwork);
-      cardano.getUsedAddresses().then(x => showAddress(x[0]));
+      wallet.getBalance().then(showBalance);
+      wallet.getNetworkId().then(showNetwork);
+      wallet.getUsedAddresses().then(x => showAddress(x[0]));
     }
 
-    cardano.onNetworkChange((n) => { showWalletData() });
-    cardano.onAccountChange (() => { showWalletData() });
+    wallet.experimental.on('networkChange', (n) => { showWalletData() });
+    wallet.experimental.on('accountChange', () => { showWalletData() });
 
     showWalletData();
     
@@ -67,17 +71,15 @@ function App() {
 
   useEffect(() => {
     if (cardano) {
-      cardano.isEnabled().then( (enabled) => {
-        if (enabled) {
-          setWallet(true);
-        }
+      cardano.nami.enable().then( (wallet) => {
+        setWallet(wallet);
       });
     }
-  })
+  }, [cardano])
 
   const connectWallet = () => {
     cardano.enable().then((resp) => {
-      setWallet(true);
+      setWallet(resp);
     }).catch((ex) => {
       alert(ex.info);
     });
@@ -93,7 +95,7 @@ function App() {
         )}
         {window.cardano && (
           <div>
-            {!(wallet) && (
+            {(wallet == null) && (
               <button onClick={connectWallet}>Connect Wallet</button>        
             )}
             {(wallet) && (
